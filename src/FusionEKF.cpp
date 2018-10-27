@@ -96,7 +96,7 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack)
 			ekf_.x_(1) = py;
 		}
 
-		// one diagonal matrix
+		// state transition matrix, one diagonal matrix, section 9, lesson 10
 		ekf_.F_ << 1, 0, 0, 0,
 			0, 1, 0, 0, 
 			0, 0, 1, 0, 
@@ -114,12 +114,37 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack)
 	 ****************************************************************************/
 
 	 /**
-	  TODO:
 		* Update the state transition matrix F according to the new elapsed time.
 		 - Time is measured in seconds.
 		* Update the process noise covariance matrix.
 		* Use noise_ax = 9 and noise_ay = 9 for your Q matrix.
 	  */
+	// dt expressed in seconds
+	float dt = (measurement_pack.timestamp_ - previous_timestamp_) / 1000000.0;
+	previous_timestamp_ = measurement_pack.timestamp_;
+
+	// integrate the dt in the state transition matrix, section 9, lesson 10
+	ekf_.F_(0, 2) = dt;
+	ekf_.F_(1, 3) = dt;
+
+	// set the process covariance matrix Q, section 10, lesson 10
+	float dt_2 = dt * dt;
+	float dt_3 = dt_2 * dt;
+	float dt_4 = dt_3 * dt;
+	
+	float term0_0 = (dt_4 * this->noise_ax) / 4;
+	float term0_2 = (dt_3 * this->noise_ax) / 2;
+	float term1_1 = (dt_4 * this->noise_ay) / 4;
+	float term1_3 = (dt_3 * this->noise_ay) / 2;
+	float term2_0 = term0_2;
+	float term2_2 = dt_2 * this->noise_ax;
+	float term3_1 = term1_3;
+	float term3_3 = dt_2 * this->noise_ay;
+	ekf_.Q_ = MatrixXd(4, 4);
+	ekf_.Q_ << term0_0, 0, term0_2, 0
+		, 0, term1_1, 0, term1_3
+		, term2_0, 0, term2_2, 0
+		, 0, term3_1, 0, term3_3;
 
 	ekf_.Predict();
 
@@ -128,16 +153,24 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack)
 	 ****************************************************************************/
 
 	 /**
-	  TODO:
 		* Use the sensor type to perform the update step.
 		* Update the state and covariance matrices.
 	  */
 
-	if (measurement_pack.sensor_type_ == MeasurementPackage::RADAR) {
+	if (measurement_pack.sensor_type_ == MeasurementPackage::RADAR) 
+	{
 		// Radar updates
+		Hj_ = tools.CalculateJacobian(ekf_.x_);
+		ekf_.H_ = Hj_;
+		ekf_.R_ = R_radar_;	// laser uncertinity
+		ekf_.UpdateEKF(measurement_pack.raw_measurements_);
 	}
-	else {
+	else 
+	{
 		// Laser updates
+		ekf_.H_ = H_laser_;
+		ekf_.R_ = R_laser_;	// laser uncertinity 
+		ekf_.Update(measurement_pack.raw_measurements_);
 	}
 
 	// print the output

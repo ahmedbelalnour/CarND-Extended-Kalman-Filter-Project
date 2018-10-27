@@ -55,8 +55,6 @@ FusionEKF::~FusionEKF() {}
 
 void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack)
 {
-
-
 	/*****************************************************************************
 	 *  Initialization
 	 ****************************************************************************/
@@ -98,6 +96,11 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack)
 
 		// state transition matrix, one diagonal matrix, section 9, lesson 10
 		ekf_.F_ << 1, 0, 0, 0,
+			0, 1, 0, 0,
+			0, 0, 1, 0,
+			0, 0, 0, 1;
+		// state covariance matrix P
+		ekf_.P_ << 1, 0, 0, 0,
 			0, 1, 0, 0,
 			0, 0, 1, 0,
 			0, 0, 0, 1;

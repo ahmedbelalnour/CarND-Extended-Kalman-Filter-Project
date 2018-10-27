@@ -98,8 +98,8 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack)
 
 		// state transition matrix, one diagonal matrix, section 9, lesson 10
 		ekf_.F_ << 1, 0, 0, 0,
-			0, 1, 0, 0, 
-			0, 0, 1, 0, 
+			0, 1, 0, 0,
+			0, 0, 1, 0,
 			0, 0, 0, 1;
 
 		previous_timestamp_ = measurement_pack.timestamp_;
@@ -119,7 +119,7 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack)
 		* Update the process noise covariance matrix.
 		* Use noise_ax = 9 and noise_ay = 9 for your Q matrix.
 	  */
-	// dt expressed in seconds
+	  // dt expressed in seconds
 	float dt = (measurement_pack.timestamp_ - previous_timestamp_) / 1000000.0;
 	previous_timestamp_ = measurement_pack.timestamp_;
 
@@ -131,7 +131,7 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack)
 	float dt_2 = dt * dt;
 	float dt_3 = dt_2 * dt;
 	float dt_4 = dt_3 * dt;
-	
+
 	float term0_0 = (dt_4 * this->noise_ax) / 4;
 	float term0_2 = (dt_3 * this->noise_ax) / 2;
 	float term1_1 = (dt_4 * this->noise_ay) / 4;
@@ -157,7 +157,7 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack)
 		* Update the state and covariance matrices.
 	  */
 
-	if (measurement_pack.sensor_type_ == MeasurementPackage::RADAR) 
+	if (measurement_pack.sensor_type_ == MeasurementPackage::RADAR)
 	{
 		// Radar updates
 		Hj_ = tools.CalculateJacobian(ekf_.x_);
@@ -165,7 +165,7 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack)
 		ekf_.R_ = R_radar_;	// laser uncertinity
 		ekf_.UpdateEKF(measurement_pack.raw_measurements_);
 	}
-	else 
+	else
 	{
 		// Laser updates
 		ekf_.H_ = H_laser_;

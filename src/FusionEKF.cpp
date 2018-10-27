@@ -17,9 +17,9 @@ FusionEKF::FusionEKF() {
   previous_timestamp_ = 0;
 
   // initializing matrices
-  R_laser_ = MatrixXd(2, 2);
-  R_radar_ = MatrixXd(3, 3);
-  H_laser_ = MatrixXd(2, 4);
+  R_laser_ = MatrixXd(2, 2);	// this values are provided by the laser manufacturer
+  R_radar_ = MatrixXd(3, 3);	// this values are provided by the laser manufacturer
+  H_laser_ = MatrixXd(2, 4);	// section 11 lesson 5
   Hj_ = MatrixXd(3, 4);
 
   //measurement covariance matrix - laser
@@ -32,12 +32,19 @@ FusionEKF::FusionEKF() {
         0, 0, 0.09;
 
   /**
-  TODO:
     * Finish initializing the FusionEKF.
     * Set the process and measurement noises
   */
+  // from section 11 in lesson 5
+  H_laser_ << 1, 0, 0, 0,
+	  0, 1, 0, 0;
 
+  ekf_.F_ = MatrixXd(4, 4);	//4x4 matrix state transition
+  ekf_.P_ = MatrixXd(4, 4);	//4x4 matrix
 
+  //set the acceleration noise components
+  noise_ax = 9;
+  noise_ay = 9;
 }
 
 /**

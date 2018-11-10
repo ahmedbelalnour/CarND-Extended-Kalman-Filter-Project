@@ -8,7 +8,7 @@ build/
 CarND-Term2-ide-profile-VisualStudio/products/
 # editor config
 .vscode/
-
+.vs/
 # Xcode
 *.pbxuser
 !default.pbxuser

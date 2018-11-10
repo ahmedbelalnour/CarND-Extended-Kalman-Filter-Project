@@ -67,6 +67,7 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack)
 		// first measurement
 		cout << "EKF: " << endl;
 		ekf_.x_ = VectorXd(4);
+		ekf_.x_new = VectorXd(4);
 		ekf_.x_ << 1, 1, 1, 1;	//this value is important for the RMSE
 
 		if (measurement_pack.sensor_type_ == MeasurementPackage::RADAR)
@@ -175,7 +176,6 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack)
 		ekf_.R_ = R_laser_;	// laser uncertinity 
 		ekf_.Update(measurement_pack.raw_measurements_);
 	}
-
 	// print the output
 	cout << "x_ = " << ekf_.x_ << endl;
 	cout << "P_ = " << ekf_.P_ << endl;

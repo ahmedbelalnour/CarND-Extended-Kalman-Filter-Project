@@ -1,5 +1,7 @@
+#include <iostream>
 #include "kalman_filter.h"
 
+using namespace std;
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
 
@@ -29,6 +31,24 @@ void KalmanFilter::Predict() {
 	P_ = F_ * P_ * Ft + Q_;
 }
 
+bool KalmanFilter::ValidateBeforeUpdate(const Eigen::VectorXd &x_new)
+{
+	bool retVal = false;
+	float x_diff = x_new(0) - x_(0);
+	float y_diff = x_new(1) - x_(1);
+	cout << "y_diff" << y_diff << endl;
+
+	if (false == isInit)
+	{
+		retVal = true;
+	}
+	if (abs(y_diff) < 0.3)
+	{
+		retVal = true;
+	}
+	cout << "isValid: " << retVal << endl;
+	return retVal;
+}
 void KalmanFilter::Update(const VectorXd &z) {
   /**
     * update the state by using Kalman Filter equations, section 13, lesson 10
@@ -40,12 +60,20 @@ void KalmanFilter::Update(const VectorXd &z) {
 	MatrixXd Si = S.inverse();
 	MatrixXd PHt = P_ * Ht;
 	MatrixXd K = PHt * Si;
+	bool isValid;
 
 	//new estimate
-	x_ = x_ + (K * y);
+	x_new = x_ + (K * y);
 	long x_size = x_.size();
 	MatrixXd I = MatrixXd::Identity(x_size, x_size);
-	P_ = (I - K * H_) * P_;
+	
+	isValid = ValidateBeforeUpdate(x_new);
+	if (true == isValid)
+	{
+		x_ = x_new;
+		P_ = (I - K * H_) * P_;
+	}
+	isInit = true;
 }
 
 void KalmanFilter::UpdateEKF(const VectorXd &z) 
@@ -57,7 +85,9 @@ void KalmanFilter::UpdateEKF(const VectorXd &z)
 	float y = x_(1);
 	float vx = x_(2);
 	float vy = x_(3);
-
+	static int counter = 0;
+	bool isValid = false;
+	counter++;
 	float rho = sqrt(x*x + y*y);
 	float theta = atan2(y, x);
 	float rho_dot = (x*vx + y*vy) / rho;
@@ -75,8 +105,17 @@ void KalmanFilter::UpdateEKF(const VectorXd &z)
 	MatrixXd K = PHt * Si;
 
 	//new estimate
-	x_ = x_ + (K * y_vector);
+	x_new = x_ + (K * y_vector);
+
 	long x_size = x_.size();
 	MatrixXd I = MatrixXd::Identity(x_size, x_size);
-	P_ = (I - K * H_) * P_;
+
+	isValid = ValidateBeforeUpdate(x_new);
+	if (true == isValid)
+	{
+		x_ = x_new;
+		P_ = (I - K * H_) * P_;
+	}
+	isInit = true;
+
 }

@@ -8,6 +8,9 @@ public:
   // state vector
   Eigen::VectorXd x_;
 
+  // state vector
+  Eigen::VectorXd x_new;
+
   // state covariance matrix
   Eigen::MatrixXd P_;
 
@@ -23,6 +26,8 @@ public:
   // measurement covariance matrix
   Eigen::MatrixXd R_;
 
+  //is x_ initialized
+  bool isInit;
   /**
    * Constructor
    */
@@ -51,6 +56,13 @@ public:
    * @param delta_T Time between k and k+1 in s
    */
   void Predict();
+
+  /**
+ * Prediction Predicts the state and the state covariance
+ * using the process model
+ * @param delta_T Time between k and k+1 in s
+ */
+  bool ValidateBeforeUpdate(const Eigen::VectorXd &x_new);
 
   /**
    * Updates the state by using standard Kalman Filter equations
